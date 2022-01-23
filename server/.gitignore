@@ -1,0 +1,7 @@
+venv/
+.env
+media/**/
+!media/user_avatars/default.jpg
+you_and_tube/__pycache__/
+apps/**/__pycache__/
+apps/**/migrations/
