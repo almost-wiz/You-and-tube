@@ -1,10 +1,9 @@
 from django.db.models.query_utils import Q
-from django_filters import rest_framework as filters
-
 from .models import Chat
+import django_filters
 
 
-class ChatFilter(filters.ModelFilter):
+class ChatFilter(django_filters.FilterSet):
     title = django_filters.CharFilter(lookup_expr='icontains')
 
     class Meta:

@@ -13,7 +13,7 @@ class VideoFilter(filters.FilterSet):
 
     def search(self, queryset, name, value):
         return Video.objects.filter(
-            Q(title__icontains=value) ||
-            Q(description__icontains=value) ||
-            Q(tags__icontains=[value])
+            Q(title__icontains=value) |
+            Q(description__icontains=value) |
+            Q(tags__icontains=value)
         )
