@@ -8,6 +8,7 @@ from django.core.cache import cache
 from django.contrib.auth import get_user_model
 
 from .models import Chat, Message
+from .tasks import send_message_action
 
 
 class ChatConsumer(AsyncConsumer):
@@ -45,15 +46,14 @@ class ChatConsumer(AsyncConsumer):
         if front_text is None:
             return
 
-        loaded_data = json.loads(front_text)
-
-        msg_text = loaded_data.get('message')
+        msg_text = json.loads(front_text).get('message')
 
         message_obj = await self.create_message(
             self.chat_obj,
             self.scope['user'],
             msg_text
         )
+        send_message_action.apply_async([message_obj.id], countdown=(3600*24))
 
         response = {
             'message': {

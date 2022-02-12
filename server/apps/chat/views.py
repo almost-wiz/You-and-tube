@@ -9,6 +9,7 @@ from django.core.cache import cache
 from .serializers import *
 from .permissions import *
 from .service import *
+from .tasks import send_message_action
 
 import datetime
 

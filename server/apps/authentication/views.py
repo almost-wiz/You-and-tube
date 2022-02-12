@@ -1,12 +1,18 @@
-from . import service
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework import permissions, status
 from rest_framework.response import Response
-import re
+
+from . import service
+from .tasks import send_verification_code
 
 
 @api_view(['POST'])
 def phone_verification(request):
+
+    if request.user.is_phone_verified:
+        return Response({
+            'errors': 'Your phone already been verified.'
+        }, status=status.HTTP_400_BAD_REQUEST)
 
     phone = request.POST.get('phone', None)
 
@@ -15,13 +21,13 @@ def phone_verification(request):
             'errors': 'Please, type correct phone number'
         }, status=status.HTTP_400_BAD_REQUEST)
 
-    service.send(phone)
+    send_verification_code.delay(phone)
 
     return Response({
         'message': 'Check your phone. If you entered the correct number,' \
                    ' you will receive a confirmation code',
         'errors': 0
-    }, status=status.HTTP_400_BAD_REQUEST)
+    }, status=status.HTTP_200_OK)
 
 
 @api_view(['POST'])
@@ -50,7 +56,7 @@ def code_validation(request):
     }
     _status = status.HTTP_400_BAD_REQUEST
 
-    if service.check(request.user.phone, code):
+    if service.check_code(request.user.phone, code):
         request.user.is_phone_verified = True
         request.user.save()
         response = {
