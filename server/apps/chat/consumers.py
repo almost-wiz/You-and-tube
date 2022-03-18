@@ -2,7 +2,6 @@ import json
 from asgiref.sync import sync_to_async
 from channels.generic.websocket import AsyncConsumer
 from channels.db import database_sync_to_async
-from rest_framework.authtoken.models import Token
 from urllib.parse import parse_qsl
 from django.core.cache import cache
 from django.contrib.auth import get_user_model
@@ -105,56 +104,12 @@ class ChatConsumer(AsyncConsumer):
 
     @database_sync_to_async
     def create_message(self, chat_obj, user, msg_text):
-        return Message.objects.create(chat=chat_obj, author=user, text=msg_text)
-
-
-class ChatTypingConsumer(AsyncConsumer):
-
-    async def websocket_connect(self, event):
-        chat_id = self.scope['url_route']['kwargs']['chat_id']
-        self.chat_room = 'typing_%s' % chat_id
-
-        await self.channel_layer.group_add(
-            self.chat_room,
-            self.channel_name,
+        unread_users = chat_obj.members.exclude(id=self.scope['user'].id)
+        msg = Message.objects.create(
+            chat=chat_obj,
+            author=user,
+            text=msg_text,
         )
-
-        await self.send({
-            'type': 'websocket.accept',
-        })
-
-    async def websocket_receive(self, event):
-
-        front_text = event.get('text', None)
-        if front_text is None:
-            return
-
-        isTyping = json.loads(front_text).get('isTyping')
-        user = self.scope['user']
-
-        response = {
-            'typing_user': {
-                'id': user.id,
-                'isTyping': isTyping,
-            }
-        }
-
-        await self.channel_layer.group_send(
-            self.chat_room,
-            {
-                'type': 'chat.send.status',
-                'text': json.dumps(response),
-            }
-        )
-
-    async def websocket_disconnect(self, event):
-        await self.channel_layer.group_discard(
-            self.chat_room,
-            self.channel_name
-        )
-
-    async def chat_send_status(self, event):
-        await self.send({
-            'type': 'websocket.send',
-            'text': event['text'],
-        })
+        msg.unread_users.set(unread_users)
+        msg.save()
+        return msg

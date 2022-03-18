@@ -13,7 +13,6 @@ class IsChatMember(permissions.BasePermission):
 class IsChatOwnerOrReadOnly(permissions.BasePermission):
 
     def has_object_permission(self, request, view, obj):
-        print('as')
         if request.method in permissions.SAFE_METHODS:
             return True
         if obj.isDuo:

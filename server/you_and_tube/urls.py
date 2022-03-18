@@ -6,11 +6,11 @@ from .yasg import urlpatterns as doc_urlpatterns
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('auth/', include('djoser.urls')),
-    path('auth/', include('djoser.urls.jwt')),
-    path('auth/', include('apps.authentication.urls')),
-    path('api/v1/', include('apps.main.urls')),
-    path('api/v1/', include('apps.chat.urls')),
+    path('api/auth/', include('djoser.urls')),
+    path('api/auth/', include('djoser.urls.jwt')),
+    path('api/auth/', include('apps.authentication.urls')),
+    path('api/', include('apps.main.urls')),
+    path('api/', include('apps.chat.urls')),
 ]
 
 urlpatterns += doc_urlpatterns

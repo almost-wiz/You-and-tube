@@ -17,11 +17,11 @@ class VideoSerializer(ModelSerializer):
 
 class VideoRetrieveSerializer(ModelSerializer):
 
-	author = UsersSerializer(fields=('id', 'avatar', 'username'))
+	author = UsersSerializer(fields=('id', 'avatar', 'username', 'is_subscribed', 'subscribers_count', ))
 
 	class Meta:
 		model = Video
-		exclude = ('preview', 'archived', )
+		fields = '__all__'
 
 
 class VideoCreateSerializer(ModelSerializer):

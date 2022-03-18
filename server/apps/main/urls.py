@@ -1,4 +1,4 @@
-from django.urls import include, path
+from django.urls import path
 from .views import *
 
 urlpatterns = [
@@ -11,7 +11,6 @@ urlpatterns = [
 
     path('videos/<int:pk>/comments/', CommentViewset.as_view({'get': 'list'})),
     path('videos/<int:pk>/comments/add/', CommentViewset.as_view({'post': 'create'})),
-	path('comments/<int:pk>/delete/', CommentViewset.as_view({'delete': 'destroy'})),
 
     path('subscriptions/', SubscriptionViewset.as_view({'get': 'list'})),
     path('authors/<int:pk>/subscribe/', subscribe_author),

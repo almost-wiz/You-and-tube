@@ -1,5 +1,4 @@
 from rest_framework import permissions, status, viewsets
-from rest_framework.decorators import api_view, permission_classes
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -9,15 +8,11 @@ from django.core.cache import cache
 from .serializers import *
 from .permissions import *
 from .service import *
-from .tasks import send_message_action
-
-import datetime
 
 
 class ChatsViewset(viewsets.ModelViewSet):
 
     permission_classes = (permissions.IsAuthenticated, IsChatMember, IsChatOwnerOrReadOnly)
-    queryset = Chat.objects.all()
     filterset_class = ChatFilter
 
     def get_queryset(self):
@@ -36,6 +31,14 @@ class ChatsViewset(viewsets.ModelViewSet):
             return ChatRetrieveSerializer
         else:
             return ChatSerializer
+
+    def list(self, request, *args, **kwargs):
+        response = super(ChatsViewset, self).list(request, args, kwargs)
+        try:
+            response.data['results'] = sorted(response.data['results'], key=lambda k: (k['last_message']['datetime'], ), reverse=True)
+        except:
+            response.data['results'] = sorted(response.data['results'], key=lambda k: (k['unread_count'], ), reverse=True)
+        return response
 
 
 class leave_chat(APIView):
@@ -63,10 +66,11 @@ class leave_chat(APIView):
 class MessageViewset(viewsets.ModelViewSet):
 
     permission_classes = (permissions.IsAuthenticated, CanViewMessage, IsAuthorOrReadOnly, )
+    pagination_class = None
 
     def get_queryset(self):
         chat = self.get_chat()
-        return Message.objects.filter(chat=chat.id)
+        return Message.objects.filter(chat=chat.id).order_by("-id")
 
     def get_serializer_class(self):
         if self.action == 'create':
@@ -86,12 +90,10 @@ class MessageViewset(viewsets.ModelViewSet):
         return None
 
     def update(self, request, chat_id=None):
-        msg_s = [int(id) for id in self.request.GET.get('id').split(',')]
+        msg_s = Message.objects.filter(chat__id=chat_id, unread_users=self.request.user)
         for msg in msg_s:
-            Message.objects.mark_read(msg, request.user)
-        return Response({
-            'updated_messages': msg_s
-        }, status=status.HTTP_201_CREATED)
+            Message.objects.mark_read(msg.id, request.user)
+        return Response(status=status.HTTP_200_OK)
 
 
 class ChatTicketAPIView(APIView):

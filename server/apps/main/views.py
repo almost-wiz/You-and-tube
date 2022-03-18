@@ -14,8 +14,17 @@ from .service import *
 class VideoViewset(viewsets.ModelViewSet):
 
     permission_classes = (permissions.IsAuthenticated, IsAccessAllowed, IsAuthorOrReadOnly, )
-    queryset = Video.objects.exclude(archived=True)
     filterset_class = VideoFilter
+
+    def get_queryset(self):
+        retreiveAllowed = False
+        if self.kwargs.get('pk', 0):
+            v = get_object_or_404(Video, pk=self.kwargs['pk'])
+            retreiveAllowed = v.author.id == self.request.user.id
+        listAllowed = int(self.request.GET.get('author', 0)) == self.request.user.id
+        if listAllowed or retreiveAllowed:
+            return Video.objects.order_by('-datetime')
+        return Video.objects.exclude(archived=True).order_by('-datetime')
 
     def get_serializer_class(self):
         if self.action == 'list':
@@ -33,10 +42,7 @@ class CommentViewset(viewsets.ModelViewSet):
     permission_classes = (permissions.IsAuthenticated, IsAuthorOrReadOnly, )
 
     def get_queryset(self):
-        if self.action != 'destroy':
-            return Comment.objects.filter(video=self.kwargs.get('pk', None))
-        else:
-            return Comment.objects.all()
+        return Comment.objects.filter(video=self.kwargs.get('pk', None)).order_by('-datetime')
 
     def get_serializer_class(self):
         if self.action == 'list':

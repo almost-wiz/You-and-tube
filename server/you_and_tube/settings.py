@@ -190,14 +190,21 @@ CELERY_RESULT_SERIALIZER = 'json'
 
 # JWT and djoser authentication settings
 
+CLIENT_DOMAIN = 'localhost:3000'
+
 DJOSER = {
-    'PASSWORD_RESET_CONFIRM_URL': '#/username/reset/confirm/{uid}/{token}/',
-    'USERNAME_RESET_CONFIRM_URL': '#/password/reset/confirm/{uid}/{token}/',
-    'ACTIVATION_URL': '#/activate/{uid}/{token}/',
+    'ACTIVATION_URL': 'activate/{uid}/{token}/',
     'SEND_ACTIVATION_EMAIL': True,
     'SEND_CONFIRMATION_EMAIL': True,
     'TOKEN_MODEL': None,
     'LOGIN_FIELD': 'email',
+    'EMAIL' : {
+        'activation': 'apps.authentication.views.ActivationByEmail',
+    },
+    'SERIALIZERS': {
+        'user': 'apps.authentication.serializers.UsersSerializer',
+        'current_user': 'apps.authentication.serializers.UsersSerializer',
+    }
 }
 
 SIMPLE_JWT = {
@@ -208,9 +215,11 @@ SIMPLE_JWT = {
 
 # Cors
 
-CORS_ORIGIN_WHITELIST = [
-    'http://localhost:8080',
-    'http://127.0.0.1:8080',
+CORS_ALLOW_CREDENTIALS = True
+
+CORS_ALLOWED_ORIGINS  = [
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
 ]
 
 
@@ -218,7 +227,7 @@ CORS_ORIGIN_WHITELIST = [
 
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework_json_api.pagination.PageNumberPagination',
-    'PAGE_SIZE': 30,
+    'PAGE_SIZE': 20,
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
         'rest_framework.authentication.BasicAuthentication',

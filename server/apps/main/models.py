@@ -8,7 +8,7 @@ from django.utils import timezone
 class Video(models.Model):
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     title = models.CharField(max_length=200)
-    description = models.CharField(max_length=1000)
+    description = models.CharField(max_length=1000, blank=True, null=True)
     tags = ArrayField(models.CharField(max_length=100, null=True, blank=True), size=10, null=True, blank=True)
     file = models.FileField(
         upload_to='videos/',

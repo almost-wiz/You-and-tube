@@ -54,8 +54,8 @@ class ChatSerializer(ChatRetrieveSerializer):
         if msg is None:
             return None
         author_id = msg.pop('author_id')
-        user = get_user_model().objects.filter(id=author_id).values('id', 'username', 'avatar', )[0]
-        msg['author'] = user
+        user = get_user_model().objects.filter(id=author_id)[0]
+        msg['author'] = UsersSerializer(user, context={'request': self.context['request']}).data
         return msg
 
 
@@ -68,7 +68,7 @@ class ChatCreateSerializer(ModelSerializer):
 
     def validate_members(self, value):
         if self.context['request'].user not in value:
-            value.append(user)
+            value.append(self.context['request'].user)
         if len(value) < 2:
             raise ValidationError({'members': 'Members count must be more than 1'})
         if len(value) > 128:
@@ -79,7 +79,7 @@ class ChatCreateSerializer(ModelSerializer):
         attrs['title'] = attrs.get('title', 'Title')
         attrs['description'] = attrs.get('description', 'Description')
         attrs['creator'] = self.context['request'].user
-        attrs['isDuo'] = True if attrs['members'] == 2 else False
+        attrs['isDuo'] = True if len(attrs['members']) == 2 else False
         return attrs
 
 

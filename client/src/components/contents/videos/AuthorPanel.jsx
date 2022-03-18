@@ -1,6 +1,32 @@
-import { Link } from '../../elements/Link'
+import { Link } from "../../elements/Link";
+import { Context } from "../../../context";
+import { useContext, useEffect, useState } from "react";
+import { getMinimizedNum } from "../../../utils/nums";
+import { observer } from "mobx-react-lite";
+import { useFetching } from "../../../hooks/useFetching";
+import { VideosList } from "../../elements/videos/VideosList";
+import { getPageCount } from "../../../utils/pages";
+import VideosService from "../../../API/VideosService";
 
-export const AuthorPanel = () => {
+export const AuthorPanel = observer(() => {
+  const { store } = useContext(Context);
+
+  const [videos, setVideos] = useState([]);
+  const [totalPages, setTotalPages] = useState(0);
+  const [page, setPage] = useState(1);
+
+  const [fetchVideos, isLoading, error] = useFetching(async (params) => {
+    const response = await VideosService.get_videos(params);
+    setVideos([...videos, ...response.data.results]);
+    setTotalPages(getPageCount(response.data.count, 20));
+  });
+
+  useEffect(() => {
+    if (store.user.id) {
+      fetchVideos({ author: store.user.id, page: page });
+    }
+  }, [page]);
+
   return (
     <main className="main is-visible">
       <div className="container h-100">
@@ -8,8 +34,22 @@ export const AuthorPanel = () => {
           <div className="chat-header border-bottom py-4 py-lg-7">
             <div className="row align-items-center">
               <div className="col-2 p-0 my-5 d-xl-none d-flex flex-row align-items-center">
-                <Link to='/videos' className="btn btn-icon btn-primary rounded-circle ms-5">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="feather feather-chevron-left"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                <Link
+                  to="/videos"
+                  className="btn btn-icon btn-primary rounded-circle ms-5"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    className="feather feather-chevron-left"
+                  >
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                  </svg>
                 </Link>
               </div>
               <div className="col col-sm-6 col-xl-10">
@@ -33,74 +73,70 @@ export const AuthorPanel = () => {
 
           <div className="chat-body hide-scrollbar flex-1 h-100">
             <div className="chat-body-inner">
-              <div className="py-6 py-lg-12">
-
-                <div className='row flex-column-reverse flex-xl-row flex-md-row flex-sm-row'>
-                  <div className='col'>
+              <div className="py-3">
+                <div className="row flex-column-reverse flex-xl-row flex-md-row">
+                  <div className="col">
                     <div className="card text-white bg-secondary mb-3 mx-5 px-10 text-center">
                       <div className="card-header">Subscribers</div>
                       <div className="card-body">
-                        <p className="card-title m-0" style={{fontSize: '50px'}}>4.7</p>
-                        <h4 className="card-title" style={{marginTop: '-20px'}}>million</h4>
+                        <p
+                          className="card-title m-0"
+                          style={{ fontSize: "50px" }}
+                        >
+                          {getMinimizedNum(store.user.subscribers_count)}
+                        </p>
                       </div>
                     </div>
 
                     <div className="card text-white bg-secondary mb-3 mx-5 px-10 text-center">
                       <div className="card-header">Total views</div>
                       <div className="card-body">
-                        <p className="card-title m-0" style={{fontSize: '50px'}}>762</p>
-                        <h4 className="card-title" style={{marginTop: '-20px'}}>million</h4>
+                        <p
+                          className="card-title m-0"
+                          style={{ fontSize: "50px" }}
+                        >
+                          {getMinimizedNum(store.user.total_views)}
+                        </p>
                       </div>
                     </div>
                   </div>
 
-                  <div className='col mb-10 my-xl-auto my-md-auto my-sm-auto'>
+                  <div className="col mb-10 my-xl-auto my-md-auto my-sm-auto">
                     <div className="px-auto text-center">
-                      <img width='90' height='90' src="https://img.icons8.com/external-justicon-lineal-color-justicon/64/000000/external-video-notifications-justicon-lineal-color-justicon.png" alt="Logo"/>
-                      <h1 className="fw-light">Album example</h1>
-                      <h3 className="text-muted">example@domain.com</h3>
-                      <h3 className="text-muted">+12345678910</h3>
+                      <img
+                        width="90"
+                        height="90"
+                        src={store.user.avatar}
+                        alt="Logo"
+                        style={{ borderRadius: 100 }}
+                      />
+                      <h1 className="fw-light">{store.user.username}</h1>
+                      <h3 className="text-muted">{store.user.email}</h3>
+                      <h3 className="text-muted">{store.user.phone}</h3>
                       <Link to="/settings">Settings</Link>
                     </div>
                   </div>
                 </div>
-
               </div>
 
-              <div className='text-center'>
+              <div className="text-center">
                 <h2>Manage your videos</h2>
-                <hr/>
+                <hr />
               </div>
 
-              <div className="album py-5">
-                <div className="container">
-                  <div className="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
-
-                    <div className="col-lg-4 d-lg-block">
-                      <div className="card">
-                        <img src="https://mdbcdn.b-cdn.net/img/new/standard/nature/182.webp" className="card-img-top" alt="Preview"/>
-                        <div className="card-body">
-                          <div className='d-flex justify-content-between align-items-center mb-3'>
-                            <h5 className="card-title m-0">Card title</h5>
-                            <Link className="card-text" to="/videos/authors/1">author</Link>
-                          </div>
-                          <p className="text-truncate">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-                          <div className='d-flex justify-content-between align-items-center'>
-                            <Link to="/videos/author-panel/edit?video=1" className="text-warning">Edit...</Link>
-                            <small className="text-muted">9 mins</small>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                  </div>
-                </div>
-              </div>
+              <VideosList
+                page={page}
+                setPage={setPage}
+                totalPages={totalPages}
+                videos={videos}
+                isLoading={isLoading}
+                error={error}
+                isEditable={true}
+              />
             </div>
           </div>
-
         </div>
       </div>
     </main>
-  )
-}
+  );
+});

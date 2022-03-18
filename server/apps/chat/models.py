@@ -34,7 +34,7 @@ class Message(models.Model):
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='msg_author')
     chat = models.ForeignKey(Chat, on_delete=models.CASCADE)
     text = models.TextField(max_length=5000)
-    unread_users = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='unread_users')
+    unread_users = models.ManyToManyField(settings.AUTH_USER_MODEL, null=True, blank=True, related_name='unread_users')
     datetime = models.DateTimeField(auto_now_add=True)
 
     objects = MessageManager()

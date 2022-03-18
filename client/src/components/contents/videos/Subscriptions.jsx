@@ -1,43 +1,68 @@
-import { Link } from '../../elements/Link'
-import { VideoSearchBar } from '../../elements/VideoSearchBar'
+import { useEffect, useRef, useState } from "react";
+import VideosService from "../../../API/VideosService";
+import { useFetching } from "../../../hooks/useFetching";
+import { useObserver } from "../../../hooks/useObserver";
+import { getPageCount } from "../../../utils/pages";
+import { LoadingDots } from "../../elements/Loading/LoadingDots";
+import { SubscriptionCard } from "../../elements/videos/SubscriptionCard";
+import { VideoHeader } from "../../elements/videos/VideoHeader";
 
 export const Subscriptions = () => {
+  const lastElement = useRef();
+
+  const [subscriptions, setSubscriptions] = useState([]);
+  const [totalPages, setTotalPages] = useState(0);
+  const [page, setPage] = useState(1);
+
+  const [fetchSubscriptions, isLoading, error] = useFetching(async (params) => {
+    const response = await VideosService.get_subscriptions(params);
+    setSubscriptions([...subscriptions, ...response.data.results]);
+    setTotalPages(getPageCount(response.data.count, 20));
+  });
+
+  useObserver(lastElement, page < totalPages, isLoading, () => {
+    setPage(page + 1);
+  });
+
+  useEffect(() => {
+    fetchSubscriptions({ page: page });
+  }, [page]);
+
   return (
     <main className="main is-visible">
       <div className="container h-100">
         <div className="d-flex flex-column h-100 position-relative">
-          <VideoSearchBar />
-
+          <VideoHeader />
           <div className="chat-body hide-scrollbar flex-1 h-100">
             <div className="chat-body-inner">
               <div className="py-6 py-lg-12">
                 <div className="row">
-
-                  <div className="col-lg-3 col-md-4 col-sm-6 my-5">
-                    <div className="card">
-                      <div className="d-flex flex-column align-items-center">
-                        <div className="avatar avatar-xl m-5">
-                          <img height='82' width='82' src="https://img.icons8.com/external-justicon-lineal-color-justicon/64/000000/external-video-notifications-justicon-lineal-color-justicon.png" alt="Logo"/>
-                        </div>
-
-                        <Link className="h4 card-text" to="/videos/authors/1">William Wright</Link>
-                        <h5 className="text-muted">4.7m subscribers</h5>
-                      </div>
-                      <div className="card-body">
-                        <div className='d-flex justify-content-center'>
-                          <button className="btn btn-sm btn-danger">Unsubscribe</button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
+                  {subscriptions.length &&
+                    subscriptions.map((item) => (
+                      <SubscriptionCard
+                        item={item}
+                        subscriptions={subscriptions}
+                        setSubscriptions={setSubscriptions}
+                        key={item.id}
+                      />
+                    ))}
+                  <div ref={lastElement} style={{ height: 20 }}></div>
                 </div>
               </div>
             </div>
+            {isLoading && (
+              <div className="d-flex flex-column justify-content-center text-center">
+                <LoadingDots size={60} />
+              </div>
+            )}
+            {error && (
+              <div className="d-flex flex-column justify-content-center text-center">
+                <p className="text-muted">You are not following anyone...</p>
+              </div>
+            )}
           </div>
-
         </div>
       </div>
     </main>
-  )
-}
+  );
+};

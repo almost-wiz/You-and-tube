@@ -1,4 +1,4 @@
-export const Loading = () => {
+export const LoadingPage = () => {
   return (
     <div className="container vh-100">
       <div className="row align-items-center justify-content-center h-100 gx-0">

@@ -1,6 +1,10 @@
-import { Link } from '../elements/Link'
+import { Link } from "../elements/Link";
+import { Context } from "../../context";
+import { useContext } from "react";
 
 export const ProfileModal = ({ setModal }) => {
+  const { store } = useContext(Context);
+
   return (
     <>
       <div className="profile modal-gx-n">
@@ -9,29 +13,36 @@ export const ProfileModal = ({ setModal }) => {
           <div className="position-absolute top-0 start-0 py-6 px-5">
             <button
               className="btn-close btn-close-white btn-close-arrow opacity-100"
-              onClick={() => {setModal(false)}}
+              onClick={() => {
+                setModal(false);
+              }}
             ></button>
           </div>
         </div>
 
         <div className="profile-body">
           <div className="avatar avatar-xl">
-            <img src="https://img.icons8.com/external-justicon-lineal-color-justicon/64/000000/external-video-notifications-justicon-lineal-color-justicon.png" alt="Logo"/>
+            <img
+              className="img-fluid"
+              style={{ borderRadius: 100 }}
+              src={store.user.avatar}
+              alt=""
+            />
           </div>
 
-          <h4 className="mb-1">William Wright</h4>
+          <h3 className="mb-1">{store.user.name}</h3>
+          <h5 className="mb-1">@{store.user.username}</h5>
         </div>
       </div>
 
-      <hr className="hr-bold modal-gx-n my-0"/>
+      <hr className="hr-bold modal-gx-n my-0" />
 
       <ul className="list-group list-group-flush">
-
         <li className="list-group-item">
           <div className="row align-items-center gx-6">
             <div className="col">
               <h5>E-mail</h5>
-              <p>william@studio.com</p>
+              <p>{store.user.email}</p>
             </div>
 
             <div className="col-auto">
@@ -46,7 +57,7 @@ export const ProfileModal = ({ setModal }) => {
           <div className="row align-items-center gx-6">
             <div className="col">
               <h5>Phone</h5>
-              <p>1-800-275-2273</p>
+              <p>{store.user.phone}</p>
             </div>
 
             <div className="col-auto">
@@ -58,17 +69,21 @@ export const ProfileModal = ({ setModal }) => {
         </li>
       </ul>
 
-      <hr className="hr-bold modal-gx-n my-0"/>
+      <hr className="hr-bold modal-gx-n my-0" />
 
       <ul className="list-group list-group-flush">
         <li className="list-group-item">
-          <Link to="/settings" className="text-reset" >Settings</Link>
+          <Link to="/settings" className="text-reset">
+            Settings
+          </Link>
         </li>
 
         <li className="list-group-item">
-          <button className="btn btn-danger">Logout</button>
+          <button className="btn btn-danger" onClick={() => store.logout()}>
+            Logout
+          </button>
         </li>
       </ul>
     </>
-  )
-}
+  );
+};

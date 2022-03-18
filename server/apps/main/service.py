@@ -9,11 +9,13 @@ class VideoFilter(filters.FilterSet):
 
     class Meta:
         model = Video
-        fields = ['q']
+        fields = ['q', 'author']
 
     def search(self, queryset, name, value):
         return Video.objects.filter(
             Q(title__icontains=value) |
             Q(description__icontains=value) |
-            Q(tags__icontains=value)
+            Q(tags__icontains=value) |
+            Q(author__username__icontains=value) |
+            Q(author__name__icontains=value)
         )
