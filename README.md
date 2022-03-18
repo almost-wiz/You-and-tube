@@ -15,7 +15,7 @@
 #
 ### c) Setup client-side:
 
-1. `npm install`
+1. Install dependencies: `npm install`
 2. Run client: `npm run start`
 #
 ### d) Enjoy :D
